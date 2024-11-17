@@ -10,6 +10,7 @@ from sklearn.metrics import classification_report
 
 def preprocess_test_images(image_paths):
     images = []
+
     for image_path in image_paths:
         if os.path.exists(image_path):
            image = cv2.imread(image_path)
@@ -20,8 +21,12 @@ def preprocess_test_images(image_paths):
         else:
             print(f"image file {image_path} not found.")
     return np.array(images)
+
+
+
 spreadsheet_path = 'Data/PatientsTestingData.xlsx'
 spreadsheet = pd.read_excel(spreadsheet_path)
+
 
 # Extract files paths from the spreadsheet 
 test_image_paths = spreadsheet['Patient X-Ray File'].tolist()
@@ -29,7 +34,7 @@ test_images = preprocess_test_images(test_image_paths)
 
 # load the trained model 
 
-model = load_model('best_pneumonia_modelrgb.keras')
+model = load_model('best_pneumonia_modelrgbposneg.keras')
 #model = load_model('87_85.keras') # this uses the image size of 224,224,3
 #model = load_model('90_03.keras') # this uses the image size of 448,448,3
 
@@ -46,6 +51,8 @@ predicted_classes = np.argmax(predictions , axis = 1 )
 for i , image_path in enumerate(test_image_paths):
     print(f"\Image: {image_path} , Predicted Class: {predicted_classes[i]}")
 true_labels = spreadsheet['Pneumonia'].values
+true_lables = [1 if true_labels == 2 else x for x in true_labels]
+
 print(f"\ntrue outcome {spreadsheet['Pneumonia']}")
 
 #calculate the accuracy 
