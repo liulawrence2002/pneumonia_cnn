@@ -19,7 +19,7 @@ DIR ="images"
 file_path = 'Data/PatientsTrainingData.xlsx'
 spreadsheet = pd.read_excel(file_path) # this function reads the excel file into the pandas dataframe 
 # Function to preprocess the images 
-def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (224,224)):
+def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (448,448)):
     images = []
     pneumonias = []
     for index, row in spreadsheet.iterrows():
@@ -33,7 +33,7 @@ def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (224,
             # Read and preprocess the Data
             image = cv2.imread(image_path)
             image = cv2.cvtColor(image , cv2.COLOR_BGR2RGB)
-            image = cv2.resize (image , (224,224))
+            image = cv2.resize (image , (448,448))
             image_array = np.array(image) / 255.00 # this will normalize the image to a value between 0 and 1 (this will simpify the calculations)
             images.append(image_array)
             pneumonias.append(pneumonia)
@@ -41,65 +41,65 @@ def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (224,
             print(f"image file {image_path} not found.")
     return np.array(images) , np.array(pneumonias)
 # Preprocess the data
-images, labels = preprocess_data(spreadsheet, DIR, num_records=5200, target_size=(224, 224))
+images, labels = preprocess_data(spreadsheet, DIR, num_records=5200, target_size=(448, 448))
 # Encode labels
 label_encoder = LabelEncoder()
 encoded_labels = label_encoder.fit_transform(labels)
 num_classes = len(np.unique(encoded_labels))
 # Split the data into training, validation, and testing sets
 X_train_val, X_test, y_train_val, y_test = train_test_split(
-    images, encoded_labels, test_size=0.15, random_state=42, stratify=encoded_labels
+    images, encoded_labels, test_size=0.2, random_state=42, stratify=encoded_labels
 )
 X_train, X_val, y_train, y_val = train_test_split(
-    X_train_val, y_train_val, test_size=0.176, random_state=42, stratify=y_train_val
+    X_train_val, y_train_val, test_size=0.2, random_state=42, stratify=y_train_val
 )
 # Data augmentation
 datagen = ImageDataGenerator(
-    rotation_range=10,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    zoom_range=0.1,
+    rotation_range=30,
+    width_shift_range=0.15,
+    height_shift_range=0.15,
+    zoom_range=0.2,
     horizontal_flip=True
 )
 datagen.fit(X_train)
 # Build the model based on Table 1 from the paper
-def build_model(input_shape=(224, 224, 3), num_classes=3):  # Change num_classes to 3
+def build_model(input_shape=(448, 448, 3), num_classes=3):  # Change num_classes to 3
     inputs = Input(shape=input_shape)
-    x = Conv2D(32, (1,1) , strides = 1 , padding = 'same')(inputs)
+    x = Conv2D(32, (3,3) , strides = 1 , padding = 'same')(inputs)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
-    x = Conv2D(32, (1,1) , strides = 1 , padding ='same')(x)
+    x = Activation('relu')(x)
+    x = Conv2D(32, (3,3) , strides = 1 , padding ='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = MaxPooling2D((2,2) , strides =  2 , padding = 'same')(x)
-    x= Conv2D(64 , (1,1) , strides = 1 , padding = 'same')(x)
+    x= Conv2D(64 , (2,2) , strides = 1 , padding = 'same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
-    x = Conv2D(64, (1,1) , strides =1 , padding ='same')(x)
+    x = Activation('relu')(x)
+    x = Conv2D(64, (2,2) , strides =1 , padding ='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = MaxPooling2D((2,2) , strides = 2 , padding ='same')(x)
     x = Conv2D(128 , (1,1) , strides =1 , padding='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = Conv2D(128, (1,1) , strides =1 , padding ='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
-    x = MaxPooling2D((3,3) , strides = 2 , padding ='same')(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((3,3) , strides = 3 , padding ='same')(x)
     x = Conv2D(256 , (1,1) , strides =1 , padding='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = Conv2D(128, (1,1) , strides =1 , padding ='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
-    x = MaxPooling2D((3,3) , strides = 2 , padding ='same')(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((3,3) , strides = 3 , padding ='same')(x)
     x = Conv2D(1024 , (1,1) , strides =1 , padding='same')(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = Conv2D(512, (1,1) , strides =1 , padding ='same')(x)
     x = Dropout(0.4)(x)
     x = BatchNormalization()(x)
-    x = Activation('silu')(x)
+    x = Activation('relu')(x)
     x = MaxPooling2D((2,2) , strides = 2 , padding ='same')(x)
     x = Flatten()(x)
     x = Dense(512)(x)
@@ -117,7 +117,7 @@ model.summary()
 model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 # Callbacks for training
 checkpoint = ModelCheckpoint('best_pneumonia_modelrgb.keras', save_best_only=True, monitor='val_accuracy')
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=15, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=12, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.3, patience=2, cooldown=5)
 # Train the model
 history = model.fit(

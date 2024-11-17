@@ -14,7 +14,7 @@ def preprocess_test_images(image_paths):
         if os.path.exists(image_path):
            image = cv2.imread(image_path)
            image = cv2.cvtColor(image , cv2.COLOR_BGR2RGB)
-           image = cv2.resize (image , (224,224))
+           image = cv2.resize (image , (448,448))
            image_array = np.array(image) / 255.00 # this will normalize the image to a value between 0 and 1 (this will simpify the calculations)
            images.append(image_array)
         else:
@@ -29,8 +29,8 @@ test_images = preprocess_test_images(test_image_paths)
 
 # load the trained model 
 
-#model = load_model('best_pneumonia_modelrgb.keras')
-model = load_model('87_85.keras')
+model = load_model('best_pneumonia_modelrgb.keras')
+#model = load_model('87_85.keras')
 
 # make predictions 
 
