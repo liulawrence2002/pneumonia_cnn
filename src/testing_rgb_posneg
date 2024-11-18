@@ -15,7 +15,7 @@ def preprocess_test_images(image_paths):
         if os.path.exists(image_path):
            image = cv2.imread(image_path)
            image = cv2.cvtColor(image , cv2.COLOR_BGR2RGB)
-           image = cv2.resize (image , (448,448))
+           image = cv2.resize (image , (224,224))
            image_array = np.array(image) / 255.00 # this will normalize the image to a value between 0 and 1 (this will simpify the calculations)
            images.append(image_array)
         else:
@@ -49,9 +49,15 @@ predicted_classes = np.argmax(predictions , axis = 1 )
 # print out the predictions 
 
 for i , image_path in enumerate(test_image_paths):
+
     print(f"\Image: {image_path} , Predicted Class: {predicted_classes[i]}")
+
+df= spreadsheet
+df['Pneumonia'] = df['Pneumonia'].apply(lambda x:1 if x != 0 else 0)
 true_labels = spreadsheet['Pneumonia'].values
-true_lables = [1 if true_labels == 2 else x for x in true_labels]
+
+
+
 
 print(f"\ntrue outcome {spreadsheet['Pneumonia']}")
 

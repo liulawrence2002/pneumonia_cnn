@@ -19,7 +19,7 @@ DIR ="images"
 file_path = 'Data/PatientsTrainingData.xlsx'
 spreadsheet = pd.read_excel(file_path) # this function reads the excel file into the pandas dataframe 
 # Function to preprocess the images 
-def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (448,448)):
+def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (224,224)):
     images = []
     pneumonias = []
     for index, row in spreadsheet.iterrows():
@@ -27,15 +27,15 @@ def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (448,
             break
         xray_file = row['Patient X-Ray File']
         pneumonia = row['Pneumonia']
-        if pneumonia > 1 :  # The excel labels positive pneumonias a viral and bacterial (0 and 1) and in this code it is only to see whether or not the image is positive for pneumonia
-            pneumoinia = 1 
+        if pneumonia ==2:
+            pneumonia =1
         # Load the X-ray Image 
         image_path = os.path.join(dir_path , xray_file)
         if os.path.exists(image_path):
             # Read and preprocess the Data
             image = cv2.imread(image_path)
             image = cv2.cvtColor(image , cv2.COLOR_BGR2RGB)
-            image = cv2.resize (image , (448,448))
+            image = cv2.resize (image , (224,224))
             image_array = np.array(image) / 255.00 # this will normalize the image to a value between 0 and 1 (this will simpify the calculations)
             images.append(image_array)
             pneumonias.append(pneumonia)
@@ -43,9 +43,12 @@ def preprocess_data(spreadsheet, dir_path, num_records=5200 , target_size= (448,
             print(f"image file {image_path} not found.")
     return np.array(images) , np.array(pneumonias)
 # Preprocess the data
-images, labels = preprocess_data(spreadsheet, DIR, num_records=5200, target_size=(448, 448))
+images, labels = preprocess_data(spreadsheet, DIR, num_records=5200, target_size=(224, 224))
 # Encode labels
+
 label_encoder = LabelEncoder()
+if label_encoder ==2:
+    label_encoder =1
 encoded_labels = label_encoder.fit_transform(labels)
 num_classes = len(np.unique(encoded_labels))
 # Split the data into training, validation, and testing sets
@@ -65,7 +68,7 @@ datagen = ImageDataGenerator(
 )
 datagen.fit(X_train)
 # Build the model based on Table 1 from the paper
-def build_model(input_shape=(448, 448, 3), num_classes=3):  # Change num_classes to 3
+def build_model(input_shape=(224, 224, 3), num_classes=3):  # Change num_classes to 3
     inputs = Input(shape=input_shape)
     x = Conv2D(32, (3,3) , strides = 1 , padding = 'same')(inputs)
     x = BatchNormalization()(x)
