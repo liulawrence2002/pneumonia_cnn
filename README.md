@@ -55,29 +55,56 @@ pneumonia_cnn/
 
 ## Installation
 
-### 1. Clone or navigate to the project directory
+### Prerequisites
+- **Python 3.11** (Required for TensorFlow compatibility)
+- Download from: https://www.python.org/downloads/
+- Make sure to check "Add Python to PATH" during installation
 
+### Quick Setup (Windows - Recommended)
+
+1. **Install Python 3.11** if you haven't already
+2. **Double-click** [setup_venv.bat](setup_venv.bat) to create the virtual environment
+3. **Double-click** [install_dependencies.bat](install_dependencies.bat) to install all packages
+
+That's it! Your environment is ready.
+
+### Manual Setup
+
+**Step 1: Create virtual environment**
 ```bash
-cd pneumonia_cnn
+# Windows - using Python 3.11
+py -3.11 -m venv venv
+
+# Linux/Mac
+python3.11 -m venv venv
 ```
 
-### 2. Create and activate virtual environment
-
-**Windows:**
+**Step 2: Activate virtual environment**
 ```bash
+# Windows (Command Prompt)
+venv\Scripts\activate.bat
+
+# Windows (PowerShell) - may need to change execution policy first
+venv\Scripts\Activate.ps1
+
+# Linux/Mac
 venv\Scripts\activate
 ```
 
-**Linux/Mac:**
-```bash
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
+**Step 3: Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
+
+### Troubleshooting
+
+**Python 3.14 or newer**: TensorFlow doesn't support Python 3.14 yet. Please use Python 3.11.
+
+**PowerShell script execution error**: Windows blocks scripts by default. Either:
+- Use Command Prompt instead: `venv\Scripts\activate.bat`
+- Or run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+
+**Virtual environment not working**: Use the provided [setup_venv.bat](setup_venv.bat) script for automatic setup.
 
 ## Usage
 
