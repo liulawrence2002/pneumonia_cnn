@@ -110,9 +110,14 @@ pip install -r requirements.txt
 
 ### Training a Model
 
-**RGB Model (Recommended):**
+**RGB Model v2 (Recommended):**
 ```bash
 python src/training_RGBv2.py
+```
+
+**RGB Positive/Negative Model (with TensorBoard):**
+```bash
+python src/training_rgb_pos_neg.py
 ```
 
 **Greyscale Model:**
@@ -126,6 +131,8 @@ Training will:
 - Apply data augmentation to training data
 - Train the CNN model with callbacks
 - Save the best model as `best_pneumonia_modelrgbv2.keras` or `best_pneumonia_model.keras`
+- Generate model architecture diagram (PNG)
+- Log training metrics to TensorBoard (for pos/neg model)
 - Display test accuracy and classification report
 
 ### Testing a Model
@@ -139,6 +146,48 @@ This will:
 - Preprocess test images
 - Make predictions on test set
 - Display accuracy and per-image predictions
+
+### Visualizing Training with TensorBoard
+
+The [training_rgb_pos_neg.py](src/training_rgb_pos_neg.py) script includes TensorBoard integration for real-time visualization of:
+- Training and validation accuracy
+- Training and validation loss
+- Learning rate changes
+- Model architecture graph
+- Weight histograms
+
+**To launch TensorBoard:**
+
+**Option 1: Easy Launch (Recommended)**
+```bash
+# Double-click or run:
+launch_tensorboard.bat
+```
+
+**Option 2: Manual Launch**
+```bash
+# Activate your virtual environment first
+venv\Scripts\activate
+
+# Then run TensorBoard
+tensorboard --logdir=logs/fit
+```
+
+**Option 3: From Python venv directly**
+```bash
+venv\Scripts\tensorboard --logdir=logs/fit
+```
+
+Once TensorBoard is running:
+1. Open your browser to **http://localhost:6006**
+2. Explore the different tabs:
+   - **SCALARS**: View training/validation metrics over time
+   - **GRAPHS**: Visualize the model architecture
+   - **DISTRIBUTIONS**: See weight distributions
+   - **HISTOGRAMS**: View weight histograms across epochs
+
+**Model Architecture Diagram:**
+After training, a PNG diagram of the model architecture will be saved as `model_architecture_posneg.png` in the project root directory.
 
 ## Model Performance
 
@@ -154,7 +203,7 @@ The project expects:
 
 ## Dependencies
 
-- TensorFlow 2.13+
+- TensorFlow 2.13+ (includes TensorBoard)
 - NumPy
 - Pandas
 - OpenCV (cv2)
@@ -162,6 +211,8 @@ The project expects:
 - Pillow (PIL)
 - imageio
 - openpyxl
+- pydot (for model visualization)
+- graphviz (for model visualization)
 
 See [requirements.txt](requirements.txt) for specific versions.
 

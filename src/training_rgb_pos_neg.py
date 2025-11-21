@@ -1,18 +1,19 @@
 import cv2 # this is the libary that is used to convert the image into rgb
-import os # this is the libary to locate local files from the computer 
-import imageio # this is the libary that is used to read images 
-import numpy as np # this is the libary for numerical operations 
-import pandas as pd # this is the libary for data manipulation 
+import os # this is the libary to locate local files from the computer
+import imageio # this is the libary that is used to read images
+import numpy as np # this is the libary for numerical operations
+import pandas as pd # this is the libary for data manipulation
 import tensorflow as tf # this is the libary for deep learning (machine learning/ neural networks)
 from tensorflow.keras.models import Model , Sequential # these are models that will be called on later in the code
-from tensorflow.keras.layers import Dense, Flatten , Conv2D, MaxPooling2D , Input , Dropout , BatchNormalization, Activation # these are the input , hidden and output layers within the CNN model 
-from tensorflow.keras.optimizers import Adam # this is the optimization function 
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint , ReduceLROnPlateau
-from tensorflow.keras.preprocessing.image import ImageDataGenerator 
-from sklearn.model_selection import train_test_split # this is the library that is used to split data into a training and testing subset 
-from sklearn.preprocessing import LabelEncoder # this is the function to encode labels 
-from sklearn.metrics import classification_report # this is the function that is used to generate a classification report 
-from PIL import Image # this is the libary that is used to handle image operations 
+from tensorflow.keras.layers import Dense, Flatten , Conv2D, MaxPooling2D , Input , Dropout , BatchNormalization, Activation # these are the input , hidden and output layers within the CNN model
+from tensorflow.keras.optimizers import Adam # this is the optimization function
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint , ReduceLROnPlateau, TensorBoard # TensorBoard for visualization
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from sklearn.model_selection import train_test_split # this is the library that is used to split data into a training and testing subset
+from sklearn.preprocessing import LabelEncoder # this is the function to encode labels
+from sklearn.metrics import classification_report # this is the function that is used to generate a classification report
+from PIL import Image # this is the libary that is used to handle image operations
+from datetime import datetime # this is used to create unique log directories for TensorBoard 
 # DIR is the directory that contains all the images 
 DIR ="images"
 # Load the spreadsheet from the local file titled "Data/PatientsTrainingData.xlsx"
@@ -121,17 +122,40 @@ def build_model(input_shape=(224, 224, 3), num_classes=3):  # Change num_classes
 model = build_model()
 model.summary()
 model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# Create unique TensorBoard log directory with timestamp
+log_dir = os.path.join("logs", "fit", datetime.now().strftime("%Y%m%d-%H%M%S"))
+print(f"\nTensorBoard logs will be saved to: {log_dir}")
+print("To view TensorBoard, run: tensorboard --logdir=logs/fit")
+
 # Callbacks for training
 checkpoint = ModelCheckpoint('best_pneumonia_modelrgbposneg.keras', save_best_only=True, monitor='val_accuracy')
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=12, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.3, patience=2, cooldown=5)
+
+# TensorBoard callback for real-time visualization
+tensorboard_callback = TensorBoard(
+    log_dir=log_dir,
+    histogram_freq=1,  # Log weight histograms every epoch
+    write_graph=True,  # Visualize the model graph
+    write_images=False,  # Don't log image data (can be large)
+    update_freq='epoch',  # Log metrics after each epoch
+    profile_batch=0,  # Disable profiling to save resources
+    embeddings_freq=0
+)
 # Train the model
+print("\n" + "="*60)
+print("Starting model training...")
+print("="*60)
 history = model.fit(
     datagen.flow(X_train, y_train, batch_size=16),
     epochs=100,
     validation_data=(X_val, y_val),
-    callbacks=[checkpoint, early_stopping, reduce_lr]
+    callbacks=[checkpoint, early_stopping, reduce_lr, tensorboard_callback]
 )
+print("\n" + "="*60)
+print("Training completed!")
+print("="*60)
 # Evaluate the model on the test set
 test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
 print(f"\nTest accuracy: {test_acc}")
